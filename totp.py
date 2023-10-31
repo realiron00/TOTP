@@ -15,7 +15,10 @@ import struct
 # return: OTP as string
 #===============================================================================
 def totp(key, time, digits, interval):
+    #!T=(Current Unix Time – T0) / X 
     counter = time // interval
+
+    #!TOTP = Truncate(HMAC-SHA-1(K, T))
     return hotp(key, counter, digits)
 
 #===============================================================================
@@ -35,16 +38,19 @@ def hotp(key, counter, digits):
     key = base64.b32decode(key)
 
     # Compute the HMAC-SHA-1 hash
+    #! (1) HS = HMAC-SHA-1(K, T) // 20 byte string
     hmac_digest = hmac.new(key, counter_bytes, hashlib.sha1).digest()
 
     # Dynamic Truncation
+    #! (2) Generate  a 4-byte string (Dynamic Truncation)
     offset = hmac_digest[-1] & 0x0F
     hash = hmac_digest[offset:offset+4]
-    binary_code = struct.unpack(">I", hash)[0] & 0x7FFFFFFF
+    Sbits = struct.unpack(">I", hash)[0] & 0x7FFFFFFF
 
     # Generate an OTP of the specified length
-    otp = str(binary_code % 10 ** digits)
-    return otp.zfill(digits)
+    #! (3) Compute an HOTP value
+    otp = str(Sbits % 10 ** digits)
+    return otp
 
 if __name__ == "__main__":
     otp_key = base64.b32encode("test".encode())
