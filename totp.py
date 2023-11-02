@@ -55,6 +55,9 @@ def hotp(key, counter, digits):
 if __name__ == "__main__":
     otp_key = base64.b32encode("test".encode())
     now = int(time.time())
-    otp1 = totp(otp_key, now, digits=10, interval=180)
 
-    print(otp1) # OTP Password as of Current Time
+    otp1 = totp(otp_key, now-180, digits=10, interval=180)
+    otp2 = totp(otp_key, now, digits=10, interval=180)
+    otp3 = totp(otp_key, now+180, digits=10, interval=180)
+
+    print(otp2) # OTP Password as of Current Time
